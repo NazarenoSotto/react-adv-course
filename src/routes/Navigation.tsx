@@ -2,25 +2,33 @@ import { BrowserRouter } from "react-router-dom";
 import { Routes, Route, NavLink, Navigate } from "react-router-dom";
 
 import logo from "../logo.svg";
-
-import { LazyPage1, LazyPage2, LazyPage3 } from "../01-lazyload/pages/index";
+import { routes, RouteInterface } from "./routes";
+import { Suspense } from "react";
 
 export const Navigation = () => {
   return (
-    <BrowserRouter>
-      <div className="main-layout">
-        <nav>
-          <img src={logo} alt="React Logo" />
-          <ul>
-            <li>
-              <NavLink
-                to="/lazy1"
-                className={({ isActive }) => (isActive ? "nav-active" : "")}
-              >
-                Lazy 1
-              </NavLink>
-            </li>
-            <li>
+    <Suspense fallback={<span>Loading...</span>}>
+      <BrowserRouter>
+        <div className="main-layout">
+          <nav>
+            <img src={logo} alt="React Logo" />
+            <ul>
+              {/* TODO: Crear Navlink dinamicos */}
+              {routes.map(({ to, name }: RouteInterface) =>
+                name ? (
+                  <li key={to}>
+                    <NavLink
+                      to={to}
+                      className={({ isActive }) =>
+                        (isActive ? "nav-active " : "") + "custom-nav-link"
+                      }
+                    >
+                      {name}
+                    </NavLink>
+                  </li>
+                ) : undefined
+              )}
+              {/* <li>
               <NavLink
                 to="/lazy2"
                 className={({ isActive }) => (isActive ? "nav-active" : "")}
@@ -35,18 +43,32 @@ export const Navigation = () => {
               >
                 Lazy 3
               </NavLink>
-            </li>
-          </ul>
-        </nav>
+            </li> */}
+            </ul>
+          </nav>
 
-        <Routes>
-          <Route path="lazy1" element={<LazyPage1 />} />
-          <Route path="lazy2" element={<LazyPage2 />} />
-          <Route path="lazy3" element={<LazyPage3 />} />
-
-          <Route path="/*" element={<Navigate to="/lazy1" replace />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+          <Routes>
+            {/* TODO: Crear Route Dinamicamente */}
+            {routes.map(
+              ({
+                component: Component,
+                path,
+                redirectTo,
+                to,
+              }: RouteInterface) =>
+                redirectTo ? (
+                  <Route
+                    key={path}
+                    path="/*"
+                    element={<Navigate to="/lazy1" replace />}
+                  />
+                ) : Component ? (
+                  <Route key={to} path={path} element={<Component />} />
+                ) : undefined
+            )}
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </Suspense>
   );
 };
